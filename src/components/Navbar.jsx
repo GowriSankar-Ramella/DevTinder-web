@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios"
 import { removeUser } from '../utils/authSlice';
+import { BASE_URL } from '../constants';
 
 const Navbar = () => {
     const dispatch = useDispatch()
@@ -9,7 +10,7 @@ const Navbar = () => {
     const navigate = useNavigate()
     const handleLogout = async () => {
         try {
-            await axios.get("http://localhost:3000/auth/logout", { withCredentials: true })
+            await axios.get(BASE_URL + "/auth/logout", { withCredentials: true })
             dispatch(removeUser())
             navigate("/home")
         } catch (error) {

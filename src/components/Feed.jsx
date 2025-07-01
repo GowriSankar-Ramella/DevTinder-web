@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addFeed, removeuser } from "../utils/feedSlice";
 import SuccessToast from "./SuccessToast";
 import ErrorToast from "./ErrorToast";
+import { BASE_URL } from "../constants";
 
 const TinderCard = () => {
     const [showPreviewDetails, setShowPreviewDetails] = useState(false);
@@ -55,7 +56,7 @@ const TinderCard = () => {
 
     const handleLike = async () => {
         try {
-            await axios.post(`http://localhost:3000/request/send/interested/${user._id}`, {}, { withCredentials: true })
+            await axios.post(`${BASE_URL}/request/send/interested/${user._id}`, {}, { withCredentials: true })
             setSuccessMessage("Connection request sent!!")
             setDragOffset({ x: 400, y: -100 });
             setRotation(30);
@@ -72,7 +73,7 @@ const TinderCard = () => {
 
     const handlePass = async () => {
         try {
-            await axios.post(`http://localhost:3000/request/send/ignored/${user._id}`, {}, { withCredentials: true })
+            await axios.post(`${BASE_URL}/request/send/ignored/${user._id}`, {}, { withCredentials: true })
             setSuccessMessage("Connection Ignored!!")
             setDragOffset({ x: -400, y: -100 });
             setRotation(30);
@@ -89,7 +90,7 @@ const TinderCard = () => {
 
     const handleSuperLike = async () => {
         try {
-            await axios.post(`http://localhost:3000/request/send/saved/${user._id}`, {}, { withCredentials: true })
+            await axios.post(`${BASE_URL}/request/send/saved/${user._id}`, {}, { withCredentials: true })
             setSuccessMessage("Connection Liked!!")
             setDragOffset({ x: 0, y: -400 });
             setRotation(30);
@@ -106,7 +107,7 @@ const TinderCard = () => {
 
     const getFeed = async () => {
         try {
-            const res = await axios.get("http://localhost:3000/user/feed", { withCredentials: true })
+            const res = await axios.get(`${BASE_URL}/user/feed`, { withCredentials: true })
             console.log(res.data.data.unknown)
             dispatch(addFeed(res.data.data.unknown))
         } catch (error) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Users, MapPin, Building, Github, Linkedin, Mail, User, Search } from 'lucide-react';
 import axios from 'axios';
+import { BASE_URL } from '../constants';
 
 const Connections = () => {
 
@@ -10,7 +11,7 @@ const Connections = () => {
 
     const fetchConnections = async () => {
         try {
-            const res = await axios.get("http://localhost:3000/user/connections", { withCredentials: true })
+            const res = await axios.get(BASE_URL + "/user/connections", { withCredentials: true })
             setConnections(res.data.data.data)
             setFiltered(res.data.data.data)
         } catch (error) {

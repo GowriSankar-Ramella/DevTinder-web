@@ -5,6 +5,7 @@ import axios from 'axios';
 import { addUser } from '../utils/authSlice';
 import ErrorToast from './ErrorToast';
 import SuccessToast from './SuccessToast';
+import { BASE_URL } from '../constants';
 
 
 const ProfileEditPage = () => {
@@ -44,7 +45,7 @@ const ProfileEditPage = () => {
             const skillsArray = getSkillsArray()
             const profileData = { ...profile, skills: skillsArray }
             const { email, ...profileWithoutEmail } = profileData
-            const res = await axios.patch("http://localhost:3000/profile/update", profileWithoutEmail, { withCredentials: true })
+            const res = await axios.patch(BASE_URL + "/profile/update", profileWithoutEmail, { withCredentials: true })
             dispatch(addUser(res.data.data.user))
             setSuccessMessage("Profile Updated Successfully!!")
         } catch (error) {

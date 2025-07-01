@@ -3,6 +3,7 @@ import { Users, MapPin, Building, Github, Linkedin, Mail, User, Clock, Heart, Us
 import axios from 'axios';
 import SuccessToast from './SuccessToast';
 import ErrorToast from './ErrorToast';
+import { BASE_URL } from '../constants';
 
 const Requests = () => {
     const [requests, setRequests] = useState([]);
@@ -15,7 +16,7 @@ const Requests = () => {
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("http://localhost:3000/user/requests/received", { withCredentials: true })
+            const res = await axios.get(BASE_URL + "/user/requests/received", { withCredentials: true })
             setRequests(res.data.data.data);
             setLoading(false);
         } catch (error) {
@@ -33,7 +34,7 @@ const Requests = () => {
         setProcessingRequest(requestId);
         try {
 
-            await axios.post(`http://localhost:3000/request/review/${action}/${requestId}`, {}, { withCredentials: true })
+            await axios.post(`${BASE_URL}/request/review/${action}/${requestId}`, {}, { withCredentials: true })
             await new Promise(resolve => setTimeout(resolve, 1000));
             setRequests(prev => prev.filter(req => req._id !== requestId));
             setSuccessMessage(`Request ${action}ed successfully`)

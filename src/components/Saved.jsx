@@ -3,6 +3,7 @@ import { Heart, UserPlus, X, Code, MapPin, Github, Linkedin, Building, Briefcase
 import axios from 'axios';
 import SuccessToast from './SuccessToast';
 import ErrorToast from './ErrorToast';
+import { BASE_URL } from '../constants';
 
 const Liked = () => {
     const [likedConnections, setLikedConnections] = useState([]);
@@ -15,7 +16,7 @@ const Liked = () => {
     useEffect(() => {
         const fetchLikedConnections = async () => {
             try {
-                const res = await axios.get("http://localhost:3000/user/saved", { withCredentials: true })
+                const res = await axios.get(BASE_URL + "/user/saved", { withCredentials: true })
                 console.log(res)
                 setLikedConnections(res.data.data.data);
                 setLoading(false);
@@ -31,7 +32,7 @@ const Liked = () => {
     const handleSendRequest = async (connectionId, receiptantId) => {
         setActionLoading(connectionId);
         try {
-            await axios.post(`http://localhost:3000/request/send/interested/${receiptantId}`, {}, { withCredentials: true })
+            await axios.post(`${BASE_URL}/request/send/interested/${receiptantId}`, {}, { withCredentials: true })
             setTimeout(() => {
                 setLikedConnections(prev => prev.filter(conn => conn._id !== connectionId));
                 setActionLoading(null);
@@ -47,7 +48,7 @@ const Liked = () => {
     const handleIgnore = async (connectionId, receiptantId) => {
         setActionLoading(connectionId);
         try {
-            await axios.post(`http://localhost:3000/request/send/ignored/${receiptantId}`, {}, { withCredentials: true })
+            await axios.post(`${BASE_URL}/request/send/ignored/${receiptantId}`, {}, { withCredentials: true })
             setTimeout(() => {
                 setLikedConnections(prev => prev.filter(conn => conn._id !== connectionId));
                 setActionLoading(null);

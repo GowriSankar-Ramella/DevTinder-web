@@ -5,6 +5,7 @@ import ErrorToast from './ErrorToast';
 import SuccessToast from './SuccessToast';
 import { useDispatch } from 'react-redux';
 import { addUser } from '../utils/authSlice';
+import { BASE_URL } from '../constants';
 
 const Signup = () => {
     const [firstName, setFirstName] = useState("")
@@ -19,7 +20,7 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const res = await axios.post("http://localhost:3000/auth/signup", { firstName, lastName, email, password }, { withCredentials: true })
+            const res = await axios.post(BASE_URL + "/auth/signup", { firstName, lastName, email, password }, { withCredentials: true })
             setSuccessMessage("Signedup Successfully!!!")
             dispatch(addUser(res.data.data.user))
             setTimeout(() => {

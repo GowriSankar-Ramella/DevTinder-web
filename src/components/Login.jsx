@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { addUser } from '../utils/authSlice';
 import SuccessToast from './SuccessToast';
 import ErrorToast from './ErrorToast';
+import { BASE_URL } from '../constants';
 
 const Login = () => {
     const [email, setEmail] = useState("")
@@ -17,7 +18,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const res = await axios.post("http://localhost:3000/auth/login", { email, password }, { withCredentials: true })
+            const res = await axios.post(BASE_URL + "/auth/login", { email, password }, { withCredentials: true })
             dispatch(addUser(res.data.data.user))
             setSuccessMessage("Loggedin Successfully!!!")
             setTimeout(() => {
