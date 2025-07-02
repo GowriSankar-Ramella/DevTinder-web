@@ -49,7 +49,6 @@ const ProfileEditPage = () => {
             dispatch(addUser(res.data.data.user))
             setSuccessMessage("Profile Updated Successfully!!")
         } catch (error) {
-            console.log(error.response.data)
             setErrorMessage(error.response.data);
         } finally {
             setIsLoading(false);

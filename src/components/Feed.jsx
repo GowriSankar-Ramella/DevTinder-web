@@ -108,7 +108,6 @@ const TinderCard = () => {
     const getFeed = async () => {
         try {
             const res = await axios.get(`${BASE_URL}/user/feed`, { withCredentials: true })
-            console.log(res.data.data.unknown)
             dispatch(addFeed(res.data.data.unknown))
         } catch (error) {
             console.log(error)

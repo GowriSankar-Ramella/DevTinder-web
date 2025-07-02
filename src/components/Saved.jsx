@@ -17,7 +17,6 @@ const Liked = () => {
         const fetchLikedConnections = async () => {
             try {
                 const res = await axios.get(BASE_URL + "/user/saved", { withCredentials: true })
-                console.log(res)
                 setLikedConnections(res.data.data.data);
                 setLoading(false);
             } catch (error) {

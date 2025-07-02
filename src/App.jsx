@@ -17,7 +17,6 @@ function App() {
   const dispatch = useDispatch()
   const isLoading = useSelector(store => store.auth.isLoading)
   useEffect(() => {
-    console.log("Entered protected")
     dispatch(checkAuthStatus())
   }, [])
   if (isLoading) {
