@@ -14,8 +14,11 @@ const CombinedChatInterface = () => {
     const [message, setMessage] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [typingUsers, setTypingUsers] = useState(new Map()); // Map<userId, {firstName, isTyping}>
+    const [socket, setSocket] = useState(null);
+    const [typingTimeout, setTypingTimeout] = useState(null);
     const user = useSelector(store => store?.auth?.user);
-
 
     const fetchAllChats = async () => {
         try {
@@ -38,15 +41,56 @@ const CombinedChatInterface = () => {
         }
     };
 
+    // Initialize socket and handle user online status
+    useEffect(() => {
+        if (!user) return;
+
+        const socketInstance = createSocketConnection();
+        setSocket(socketInstance);
+        setIsConnected(true);
+
+        // Emit user online status
+        socketInstance.emit("user-online", {
+            userId: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName
+        });
+
+        // Listen for online users updates
+        socketInstance.on("online-users-updated", (users) => {
+            setOnlineUsers(users);
+        });
+
+        // Listen for typing indicators
+        socketInstance.on("user-typing", ({ userId, firstName, isTyping }) => {
+            setTypingUsers(prev => {
+                const updated = new Map(prev);
+                if (isTyping) {
+                    updated.set(userId, { firstName, isTyping: true });
+                } else {
+                    updated.delete(userId);
+                }
+                return updated;
+            });
+        });
+
+        return () => {
+            // Emit user offline status before disconnecting
+            socketInstance.emit("user-offline", {
+                userId: user._id,
+                firstName: user.firstName
+            });
+            socketInstance.disconnect();
+            setIsConnected(false);
+        };
+    }, [user]);
+
     useEffect(() => {
         fetchAllChats();
     }, []);
 
     useEffect(() => {
-        if (!user || !selectedChat) return;
-
-        const socket = createSocketConnection();
-        setIsConnected(true);
+        if (!user || !selectedChat || !socket) return;
 
         socket.emit("joinChat", {
             firstName: user.firstName,
@@ -54,9 +98,8 @@ const CombinedChatInterface = () => {
             targetUserId: selectedChat._id
         });
 
-        socket.on("messageReceived", ({ firstName, lastName, text, userId, targetUserId, }) => {
+        const handleMessageReceived = ({ firstName, lastName, text, userId, targetUserId }) => {
             // Only add the message if it's not from the current user
-            // Current user's messages are already added optimistically in handleSendMessage
             if (userId !== user._id) {
                 setPrevMsgs(prevMgs => [...prevMgs, {
                     senderId: { firstName, lastName, _id: userId },
@@ -65,15 +108,15 @@ const CombinedChatInterface = () => {
                     _id: Date.now().toString()
                 }]);
             }
-        });
+        };
 
+        socket.on("messageReceived", handleMessageReceived);
         fetchPrevChat(selectedChat._id);
 
         return () => {
-            socket.disconnect();
-            setIsConnected(false);
+            socket.off("messageReceived", handleMessageReceived);
         };
-    }, [selectedChat, user]);
+    }, [selectedChat, user, socket]);
 
     const getChatPartner = (participants) => {
         const currentUserId = user._id;
@@ -83,6 +126,10 @@ const CombinedChatInterface = () => {
     const getLastMessage = (messages) => {
         if (!messages || messages.length === 0) return null;
         return messages[messages.length - 1];
+    };
+
+    const isUserOnline = (userId) => {
+        return onlineUsers.some(onlineUser => onlineUser.userId === userId);
     };
 
     const formatTime = (timestamp) => {
@@ -109,16 +156,55 @@ const CombinedChatInterface = () => {
     const handleChatSelect = (chat) => {
         const partner = getChatPartner(chat.participants);
         setSelectedChat(partner);
+        // Clear typing indicators when switching chats
+        setTypingUsers(new Map());
     };
 
     const handleInput = (e) => {
         setMessage(e.target.value);
+
+        // Handle typing indicators
+        if (!socket || !selectedChat) return;
+
+        // Start typing indicator
+        socket.emit("typing-start", {
+            userId: user._id,
+            targetUserId: selectedChat._id,
+            firstName: user.firstName
+        });
+
+        // Clear existing timeout
+        if (typingTimeout) {
+            clearTimeout(typingTimeout);
+        }
+
+        // Set new timeout to stop typing indicator
+        const timeout = setTimeout(() => {
+            socket.emit("typing-stop", {
+                userId: user._id,
+                targetUserId: selectedChat._id,
+                firstName: user.firstName
+            });
+        }, 1000);
+
+        setTypingTimeout(timeout);
     };
 
     const handleSendMessage = () => {
-        if (!message.trim() || !selectedChat) return;
+        if (!message.trim() || !selectedChat || !socket) return;
 
-        const socket = createSocketConnection();
+        // Stop typing indicator
+        socket.emit("typing-stop", {
+            userId: user._id,
+            targetUserId: selectedChat._id,
+            firstName: user.firstName
+        });
+
+        // Clear typing timeout
+        if (typingTimeout) {
+            clearTimeout(typingTimeout);
+        }
+
         socket.emit("sendMessage", {
             firstName: user.firstName,
             userId: user._id,
@@ -150,6 +236,9 @@ const CombinedChatInterface = () => {
         const fullName = `${partner?.firstName || ""} ${partner?.lastName || ""}`.toLowerCase();
         return fullName.includes(searchTerm.toLowerCase());
     });
+
+    // Check if selected chat partner is typing
+    const isPartnerTyping = selectedChat && typingUsers.has(selectedChat._id);
 
     return (
         <div className="h-screen bg-base-200 flex">
@@ -194,6 +283,7 @@ const CombinedChatInterface = () => {
                                 const lastMessage = getLastMessage(chat.messages);
                                 const currentUserId = user._id;
                                 const isSelected = selectedChat?._id === partner?._id;
+                                const partnerOnline = isUserOnline(partner?._id);
 
                                 return (
                                     <div
@@ -204,7 +294,7 @@ const CombinedChatInterface = () => {
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="avatar">
-                                                <div className="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                                                <div className="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center relative">
                                                     {partner?.photoUrl ? (
                                                         <img
                                                             src={partner.photoUrl}
@@ -221,9 +311,14 @@ const CombinedChatInterface = () => {
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <h3 className="font-semibold text-base-content truncate">
-                                                        {partner?.firstName} {partner?.lastName}
-                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="font-semibold text-base-content truncate">
+                                                            {partner?.firstName} {partner?.lastName}
+                                                        </h3>
+                                                        {partnerOnline && (
+                                                            <div className="w-2 h-2 bg-success rounded-full"></div>
+                                                        )}
+                                                    </div>
                                                     <span className="text-xs text-base-content/50">
                                                         {formatTime(chat.updatedAt)}
                                                     </span>
@@ -252,8 +347,8 @@ const CombinedChatInterface = () => {
                             <span>{allChats.length} Chats</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <MessageCircle size={14} />
-                            <span>{allChats.reduce((acc, chat) => acc + chat.messages.length, 0)} Messages</span>
+                            <div className="w-2 h-2 bg-success rounded-full"></div>
+                            <span>{onlineUsers.length} Online</span>
                         </div>
                     </div>
                 </div>
@@ -266,15 +361,16 @@ const CombinedChatInterface = () => {
                         {/* Chat Header */}
                         <div className="bg-base-100 border-b border-base-300 p-4">
                             <div className="flex items-center gap-3">
-                                <div className="avatar online">
-                                    <div className="w-10 h-10 rounded-full">
+                                <div className="avatar">
+                                    <div className="w-10 h-10 rounded-full relative">
                                         {selectedChat?.photoUrl ? (
                                             <img src={selectedChat.photoUrl} alt={selectedChat.firstName} className="w-full h-full rounded-full object-cover" />
                                         ) : (
-                                            <div className="bg-primary text-primary-content flex items-center justify-center w-full h-full">
+                                            <div className="bg-primary text-primary-content flex items-center justify-center w-full h-full rounded-full">
                                                 <User size={16} />
                                             </div>
                                         )}
+
                                     </div>
                                 </div>
                                 <div className="flex-1">
@@ -282,7 +378,12 @@ const CombinedChatInterface = () => {
                                         {selectedChat.firstName} {selectedChat.lastName}
                                     </div>
                                     <div className="text-xs text-base-content/60">
-                                        {isConnected ? 'Online' : 'Connecting...'}
+                                        {isPartnerTyping
+                                            ? 'typing...'
+                                            : isUserOnline(selectedChat._id)
+                                                ? 'Online'
+                                                : 'Offline'
+                                        }
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -311,14 +412,15 @@ const CombinedChatInterface = () => {
                                             <div className={`flex items-end gap-2 max-w-xs lg:max-w-md ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
                                                 {!isCurrentUser && (
                                                     <div className="avatar">
-                                                        <div className="w-8 h-8 rounded-full">
+                                                        <div className="w-8 h-8 rounded-full relative">
                                                             {selectedChat.photoUrl ? (
                                                                 <img src={selectedChat.photoUrl} alt={selectedChat.firstName} className="w-full h-full rounded-full object-cover" />
                                                             ) : (
-                                                                <div className="bg-secondary text-secondary-content flex items-center justify-center w-full h-full">
+                                                                <div className="bg-secondary text-secondary-content flex items-center justify-center w-full h-full rounded-full">
                                                                     <User size={12} />
                                                                 </div>
                                                             )}
+
                                                         </div>
                                                     </div>
                                                 )}
@@ -346,15 +448,23 @@ const CombinedChatInterface = () => {
                                 })
                             )}
 
-                            {isTyping && (
+                            {/* Typing Indicator */}
+                            {isPartnerTyping && (
                                 <div className="flex justify-start">
                                     <div className="flex items-center gap-2">
                                         <div className="avatar">
-                                            <div className="w-8 h-8 rounded-full bg-secondary text-secondary-content flex items-center justify-center">
-                                                <User size={12} />
+                                            <div className="w-8 h-8 rounded-full relative">
+                                                {selectedChat.photoUrl ? (
+                                                    <img src={selectedChat.photoUrl} alt={selectedChat.firstName} className="w-full h-full rounded-full object-cover" />
+                                                ) : (
+                                                    <div className="bg-secondary text-secondary-content flex items-center justify-center w-full h-full rounded-full">
+                                                        <User size={12} />
+                                                    </div>
+                                                )}
+
                                             </div>
                                         </div>
-                                        <div className="chat-bubble bg-base-100 text-base-content shadow-lg">
+                                        <div className="bg-base-100 text-base-content shadow-lg border border-base-300 rounded-2xl rounded-bl-md px-4 py-3">
                                             <div className="flex gap-1">
                                                 <div className="w-2 h-2 bg-base-content/40 rounded-full animate-bounce"></div>
                                                 <div className="w-2 h-2 bg-base-content/40 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
