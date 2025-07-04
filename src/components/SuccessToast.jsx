@@ -1,6 +1,17 @@
-import { CheckCircle, X, } from "lucide-react";
+import { CheckCircle, X } from "lucide-react";
+import { useEffect } from 'react';
 
 const SuccessToast = ({ message, onClose }) => {
+    useEffect(() => {
+        if (message && onClose) {
+            const timer = setTimeout(() => {
+                onClose();
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [message, onClose]);
+
     if (!message) return null;
 
     return (
@@ -26,4 +37,4 @@ const SuccessToast = ({ message, onClose }) => {
     );
 };
 
-export default SuccessToast
+export default SuccessToast;

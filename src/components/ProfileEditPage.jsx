@@ -21,6 +21,7 @@ const ProfileEditPage = () => {
         about: user?.about || '',
         photoUrl: user?.photoUrl || '',
         age: user?.age || '',
+        gender: user?.gender || '',
         location: user?.location || '',
         company: user?.company || '',
         experience: user?.experience || '',
@@ -170,7 +171,7 @@ const ProfileEditPage = () => {
                                     />
                                 </div>
 
-                                {/* Age, Location, Company */}
+                                {/* Age, Gender, Location */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="form-control">
                                         <label className="label">
@@ -188,6 +189,21 @@ const ProfileEditPage = () => {
                                     </div>
                                     <div className="form-control">
                                         <label className="label">
+                                            <span className="label-text font-medium">Gender</span>
+                                        </label>
+                                        <select
+                                            value={profile.gender}
+                                            onChange={(e) => handleInputChange('gender', e.target.value)}
+                                            className="select select-bordered w-full focus:select-primary"
+                                        >
+                                            <option value="">Select gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="others">Others</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label">
                                             <span className="label-text font-medium flex items-center">
                                                 <MapPin className="w-4 h-4 mr-1" />
                                                 Location
@@ -201,6 +217,10 @@ const ProfileEditPage = () => {
                                             placeholder="City, Country"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Company and Experience */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium flex items-center">
@@ -216,23 +236,21 @@ const ProfileEditPage = () => {
                                             placeholder="Company Name"
                                         />
                                     </div>
-                                </div>
-
-                                {/* Experience */}
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text font-medium flex items-center">
-                                            <Clock className="w-4 h-4 mr-1" />
-                                            Experience ( Years )
-                                        </span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={profile.experience}
-                                        onChange={(e) => handleInputChange('experience', e.target.value)}
-                                        className="input input-bordered w-full focus:input-primary"
-                                        placeholder="e.g., 3 years, Senior Developer, etc."
-                                    />
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-medium flex items-center">
+                                                <Clock className="w-4 h-4 mr-1" />
+                                                Experience ( Years )
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={profile.experience}
+                                            onChange={(e) => handleInputChange('experience', e.target.value)}
+                                            className="input input-bordered w-full focus:input-primary"
+                                            placeholder="e.g., 3 years, Senior Developer, etc."
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Social Links */}
@@ -351,9 +369,12 @@ const ProfileEditPage = () => {
                                                 {profile.firstName || profile.lastName
                                                     ? `${profile.firstName} ${profile.lastName}`.trim()
                                                     : 'Your Name'
-                                                }
+                                                },
+                                                {profile.gender && (
+                                                    <span className="text-lg font-normal ml-2">{profile.gender}</span>
+                                                )}
                                                 {profile.age && (
-                                                    <span className="text-lg font-normal ml-2">{profile.age}</span>
+                                                    <span className="text-lg font-normal ml-2">({profile.age})</span>
                                                 )}
                                             </h2>
                                             <div className="flex items-center gap-1 text-sm opacity-90">

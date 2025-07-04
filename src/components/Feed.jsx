@@ -267,8 +267,11 @@ const TinderCard = () => {
                                         ? `${user.firstName} ${user.lastName}`.trim()
                                         : 'Your Name'
                                     }
+                                    {user.gender && (
+                                        <span className="text-xl font-normal ml-2">,{user.gender}</span>
+                                    )}
                                     {user.age && (
-                                        <span className="text-xl font-normal ml-2">{user.age}</span>
+                                        <span className="text-xl font-normal ml-2">({user.age})</span>
                                     )}
                                 </h2>
                                 <div className="flex items-center gap-1 text-sm opacity-90 mb-2">
@@ -355,16 +358,6 @@ const TinderCard = () => {
                                             }}
                                         >
                                             <Linkedin size={16} />
-                                        </button>
-                                        <button
-                                            className={`btn btn-circle btn-sm btn-outline ${!user.email ? 'btn-disabled' : 'hover:btn-secondary'}`}
-                                            disabled={!user.email}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                user.email && window.open(`mailto:${user.email}`, '_blank');
-                                            }}
-                                        >
-                                            <Mail size={16} />
                                         </button>
                                     </div>
                                 </div>

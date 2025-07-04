@@ -1,6 +1,17 @@
 import { AlertCircle, X } from 'lucide-react';
+import { useEffect } from 'react';
 
 const ErrorToast = ({ message, onClose }) => {
+    useEffect(() => {
+        if (message && onClose) {
+            const timer = setTimeout(() => {
+                onClose();
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [message, onClose]);
+
     if (!message) return null;
 
     return (
@@ -26,4 +37,4 @@ const ErrorToast = ({ message, onClose }) => {
     );
 };
 
-export default ErrorToast
+export default ErrorToast;
