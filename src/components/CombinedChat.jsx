@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MessageCircle, Search, Code, Heart, Users, Clock, ChevronRight, Send, ArrowLeft, User, CheckCheck } from "lucide-react";
 import { BASE_URL } from "../constants";
 import { useSelector } from "react-redux";
@@ -19,6 +19,27 @@ const CombinedChatInterface = () => {
     const [socket, setSocket] = useState(null);
     const [typingTimeout, setTypingTimeout] = useState(null);
     const user = useSelector(store => store?.auth?.user);
+
+    // Add ref for messages container
+    const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
+
+    // Function to scroll to bottom
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    // Auto-scroll when messages change
+    useEffect(() => {
+        scrollToBottom();
+    }, [prevMgs]);
+
+    // Auto-scroll when typing indicator changes
+    useEffect(() => {
+        if (selectedChat && typingUsers.has(selectedChat._id)) {
+            scrollToBottom();
+        }
+    }, [typingUsers, selectedChat]);
 
     const fetchAllChats = async () => {
         try {
@@ -396,7 +417,7 @@ const CombinedChatInterface = () => {
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200">
+                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200">
                             {prevMgs.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-center">
                                     <div className="text-6xl mb-4">💬</div>
@@ -474,6 +495,9 @@ const CombinedChatInterface = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Invisible div to scroll to */}
+                            <div ref={messagesEndRef} />
                         </div>
 
                         {/* Message Input */}

@@ -12,6 +12,7 @@ import Signup from './components/Signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { checkAuthStatus } from './utils/authSlice'
 import { useEffect } from 'react'
+import CombinedChatInterface from './components/CombinedChat'
 
 function App() {
   const dispatch = useDispatch()
@@ -35,6 +36,7 @@ function App() {
         <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
         <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
         <Route path="/saved" element={<ProtectedRoute><Liked /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><CombinedChatInterface /></ProtectedRoute>} />
       </Route>
       <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />

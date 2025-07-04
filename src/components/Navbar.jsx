@@ -34,6 +34,7 @@ const Navbar = () => {
                         <li><Link to="/connections">Connections</Link></li>
                         <li><Link to="/requests">Requests</Link></li>
                         <li><Link to="/saved">Liked</Link></li>
+                        <li><Link to="/chat">Messanger</Link></li>
                     </ul>
                 </div>
             )}
