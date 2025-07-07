@@ -1,12 +1,72 @@
-# React + Vite
+# DevTinder Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend for the DevTinder platform, a developer matchmaking and collaboration application. Built with React, Vite, Redux, Tailwind CSS, and DaisyUI.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Modern UI with React and Vite
+- Developer discovery feed (Tinder-style swiping)
+- User authentication and signup
+- Profile management and editing
+- Real-time chat and connections
+- Responsive design with Tailwind CSS and DaisyUI
+- Toast notifications for feedback
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+- Node.js (v16+ recommended)
+- The [DevTinder backend](../devTinder_backend/README.md) running locally or remotely
+
+### Installation
+
+1. Clone the repository and navigate to the web folder:
+
+    ```sh
+    git clone <repo-url>
+    cd devTinder_web
+    ```
+
+2. Install dependencies:
+
+    ```sh
+    npm install
+    ```
+
+3. Start the development server:
+
+    ```sh
+    npm run dev
+    ```
+
+    The app will run on `http://localhost:5173` by default.
+
+## Project Structure
+
+```
+src/
+  components/      # React components (Feed, Signup, Navbar, etc.)
+  utils/           # Redux slices and utility functions
+  assets/          # Static assets (SVGs, images)
+  constants.js     # App-wide constants (e.g., API base URL)
+  App.jsx          # Main app component
+  main.jsx         # Entry point
+  index.css        # Tailwind and DaisyUI styles
+public/
+  vite.svg         # Public assets
+```
+
+## Customization
+
+- Update API endpoints in [`src/constants.js`](src/constants.js) if your backend runs on a different URL.
+- Tailwind and DaisyUI are configured in [`vite.config.js`](vite.config.js) and [`src/index.css`](src/index.css).
+
+## Scripts
+
+- `npm run dev` – Start development server
+- `npm run build` – Build for production
+- `npm run preview` – Preview production build
+
+
+For backend setup and API documentation, see [devTinder_backend/README.md](../devTinder_backend/README.md)
